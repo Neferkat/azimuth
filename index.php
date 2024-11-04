@@ -1,5 +1,16 @@
 <?php
+// Setup session parameters
+ini_set('session.gc_maxlifetime', 1440); // 24 minutes
+session_set_cookie_params(1440); // Session cookie lifetime in seconds
+
 session_start();
+if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 1440)) {
+    // last request was more than 24 minutes ago
+    session_unset();     // unset $_SESSION variable for the runtime 
+    session_destroy();   // destroy session data in storage
+}
+$_SESSION['LAST_ACTIVITY'] = time(); // update last activity time stamp
+
 // Security Headers
 header("X-XSS-Protection: 1; mode=block");
 header("X-Frame-Options: SAMEORIGIN");
