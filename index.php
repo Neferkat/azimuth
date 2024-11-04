@@ -1,3 +1,11 @@
+<?php
+session_start();
+// Generate CSRF token if not present
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,6 +99,7 @@
 <div class="calculator-container">
     <h1>WiFi Antenna Alignment Calculator</h1>
     <form method="post" action="index.php">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
         <!-- Antenna 1 -->
         <div class="form-group">
             <label for="lat1">Latitude Antenna 1:</label>
@@ -147,6 +156,16 @@
             return rad2deg(atan2($height2 - $height1, $distance));
         }
 
+        function isValidCoordinate($coord) {
+            $coord = floatval($coord);
+            return ($coord >= -90 && $coord <= 90) || ($coord >= -180 && $coord <= 180);
+        }
+
+        function handleError($msg) {
+            echo "<div class='error'>Error: $msg</div>";
+            exit;
+        }
+
         // Gather form data
         $lat1 = $_POST['lat1'];
         $lon1 = $_POST['lon1'];
@@ -154,6 +173,29 @@
         $lat2 = $_POST['lat2'];
         $lon2 = $_POST['lon2'];
         $height2 = $_POST['height2'];
+
+        // Sanitize inputs
+        $lat1 = filter_input(INPUT_POST, 'lat1', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
+        $lon1 = filter_input(INPUT_POST, 'lon1', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
+        $height1 = filter_input(INPUT_POST, 'height1', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
+        $lat2 = filter_input(INPUT_POST, 'lat2', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
+        $lon2 = filter_input(INPUT_POST, 'lon2', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
+        $height2 = filter_input(INPUT_POST, 'height2', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
+        $csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_STRING);
+
+        // Validate CSRF token
+        if (!isset($_SESSION['csrf_token']) || $csrf_token !== $_SESSION['csrf_token']) {
+            handleError('CSRF token validation failed');
+        }
+
+        if (!isValidCoordinate($lat1) || !isValidCoordinate($lon1) || !isValidCoordinate($lat2) || !isValidCoordinate($lon2)) {
+            handleError('Invalid coordinates provided');
+        }
+        
+        // Validate height to be a positive number
+        if ($height1 < 0 || $height2 < 0) {
+            handleError('Height cannot be negative');
+        }        
 
         // Perform calculations
         $distance = calculateDistance($lat1, $lon1, $lat2, $lon2);
