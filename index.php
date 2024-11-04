@@ -196,7 +196,7 @@ if (!isset($_SESSION['csrf_token'])) {
             $lat2 = filter_input(INPUT_POST, 'lat2', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
             $lon2 = filter_input(INPUT_POST, 'lon2', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
             $height2 = filter_input(INPUT_POST, 'height2', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
-            $csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_STRING);
+            $csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_UNSAFE_RAW);
 
             // Validate CSRF token
             if (!isset($_SESSION['csrf_token']) || $csrf_token !== $_SESSION['csrf_token']) {
