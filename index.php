@@ -189,14 +189,6 @@ if (!isset($_SESSION['csrf_token'])) {
                 exit;
             }
 
-            // Gather form data
-            $lat1 = $_POST['lat1'];
-            $lon1 = $_POST['lon1'];
-            $height1 = $_POST['height1'];
-            $lat2 = $_POST['lat2'];
-            $lon2 = $_POST['lon2'];
-            $height2 = $_POST['height2'];
-
             // Sanitize inputs
             $lat1 = filter_input(INPUT_POST, 'lat1', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
             $lon1 = filter_input(INPUT_POST, 'lon1', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_SCIENTIFIC | FILTER_FLAG_ALLOW_FRACTION);
